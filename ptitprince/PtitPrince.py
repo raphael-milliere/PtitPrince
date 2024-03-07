@@ -680,7 +680,7 @@ def RainCloud(x = None, y = None, hue = None, data = None,
               scale = "area", jitter = 1, move = 0., offset = None,
               point_size = 3, ax = None, pointplot = False,
               alpha = None, dodge = False, linecolor = 'red',
-              show_boxplot = True,
+              show_boxplot = True, show_mean_error = False,
               **kwargs):
 
     '''Draw a Raincloud plot of measure `y` of different categories `x`. Here `x` and `y` different columns of the pandas dataframe `data`.
@@ -756,19 +756,40 @@ def RainCloud(x = None, y = None, hue = None, data = None,
                             color = boxcolor, showcaps = True, boxprops = boxprops,
                             palette = palette, dodge = dodge, ax =ax, **kwbox)
 
+    if show_mean_error:
+        # Calculate mean and standard deviation for each group
+        if hue:  # If hue is used, calculate for each subgroup
+            categories = data[x].unique()
+            hues = data[hue].unique()
+            for category in categories:
+                for h in hues:
+                    subset = data[(data[x] == category) & (data[hue] == h)]
+                    mean = subset[y].mean()
+                    std = subset[y].std()
+                    # Adjusting the position based on hue
+                    position = categories.tolist().index(category) + (hues.tolist().index(h) * width_box/len(hues))
+                    ax.errorbar(position, mean, yerr=std, fmt='o', color='black', capsize=5)
+        else:  # If no hue is used, calculate for each main category
+            categories = data[x].unique()
+            for category in categories:
+                subset = data[data[x] == category]
+                mean = subset[y].mean()
+                std = subset[y].std()
+                position = categories.tolist().index(category)
+                ax.errorbar(position, mean, yerr=std, fmt='o', color='black', capsize=5)
 
     # Set alpha of the two
     if not alpha is None:
         _ = plt.setp(ax.collections + ax.artists, alpha = alpha)
 
     # Draw rain/stripplot
-    ax = stripplot(x=x, y=y, hue=hue, data=data, orient=orient,
-                   order=order, hue_order=hue_order, palette=palette,
-                   move=move, size=point_size, jitter=jitter, dodge=dodge,
-                   width=width_box, ax=ax, **kwrain)
+    ax = stripplot(x = x, y = y, hue = hue, data = data, orient = orient,
+                    order = order, hue_order = hue_order, palette = palette,
+                    move = move, size = point_size, jitter = jitter, dodge = dodge,
+                    width = width_box, ax = ax, **kwargs)
 
     # Draw box plot only if box=True
-    if box:
+    if show_boxplot:
         sns.boxplot(x=x, y=y, hue=hue, data=data, orient=orient,
                     order=order, hue_order=hue_order,
                     color=boxcolor, width=width_box, zorder=10,
