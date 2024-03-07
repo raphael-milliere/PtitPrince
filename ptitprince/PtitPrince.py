@@ -673,13 +673,13 @@ def half_violinplot(x=None, y=None, hue=None, data=None, order=None, hue_order=N
     return ax
 
 
-def RainCloud(x = None, y = None, hue = None, data = None,
-              order = None, hue_order = None,
-              orient = "v", width_viol = .7, width_box = .15,
-              palette = "Set2", bw = .2, linewidth = 1, cut = 0.,
-              scale = "area", jitter = 1, move = 0., offset = None,
-              point_size = 3, ax = None, pointplot = False,
-              alpha = None, dodge = False, linecolor = 'red', **kwargs):
+def RainCloud(x=None, y=None, hue=None, data=None,
+              order=None, hue_order=None,
+              orient="v", width_viol=.7, width_box=.15,
+              palette="Set2", bw=.2, linewidth=1, cut=0.,
+              scale="area", jitter=1, move=0., offset=None,
+              point_size=3, ax=None, pointplot=False,
+              alpha=None, dodge=False, linecolor='red', box=True, **kwargs):
 
     '''Draw a Raincloud plot of measure `y` of different categories `x`. Here `x` and `y` different columns of the pandas dataframe `data`.
 
@@ -758,10 +758,19 @@ def RainCloud(x = None, y = None, hue = None, data = None,
         _ = plt.setp(ax.collections + ax.artists, alpha = alpha)
 
     # Draw rain/stripplot
-    ax =  stripplot (x = x, y = y, hue = hue, data = data, orient = orient,
-                    order = order, hue_order = hue_order, palette = palette,
-                    move = move, size = point_size, jitter = jitter, dodge = dodge,
-                    width = width_box, ax = ax, **kwrain)
+    ax = stripplot(x=x, y=y, hue=hue, data=data, orient=orient,
+                   order=order, hue_order=hue_order, palette=palette,
+                   move=move, size=point_size, jitter=jitter, dodge=dodge,
+                   width=width_box, ax=ax, **kwrain)
+
+    # Draw box plot only if box=True
+    if box:
+        sns.boxplot(x=x, y=y, hue=hue, data=data, orient=orient,
+                    order=order, hue_order=hue_order,
+                    color=boxcolor, width=width_box, zorder=10,
+                    showcaps=True, boxprops=boxprops,
+                    showfliers=True, whiskerprops={'linewidth': 2, "zorder": 10},
+                    saturation=1, dodge=dodge, ax=ax, **kwbox)
 
     # Add pointplot
     if pointplot:
